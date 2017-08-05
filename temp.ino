@@ -151,6 +151,11 @@ void updateDisplay() {
     lcd.print("0");
   }
   lcd.print(minute());
+
+  if(current > 0) {
+    lcd.setCursor(0,2);
+  lcd.print(current);
+  }
 }
 
 void loop(void) 
