@@ -78,7 +78,7 @@ void setup(void)
 { 
   Serial.begin(9600);
   sensors.begin(); 
-  setTime(1,52,0,4,8,17);
+  setTime(12,27,0,5,8,17);
 
   Alarm.alarmRepeat(9,0,0,lightsOn);
   Alarm.alarmRepeat(23,0,0,lightsOff);
