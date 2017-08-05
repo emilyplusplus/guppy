@@ -126,7 +126,7 @@ void setup(void)
   lcd.write(6);
   lcd.write(7);
 
-  Alarm.timerRepeat(30, getTemp);
+  Alarm.timerRepeat(5, getTemp);
   Alarm.timerRepeat(1, updateDisplay);
 
   lightsOn();
