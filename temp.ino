@@ -61,6 +61,13 @@ byte customChar4[8] = {
 };
 
 void lightsOn() {
+  if(ledOn == true) return;
+  
+  ledOn = true;
+  
+  lcd.setCursor(12,0);
+  lcd.print("I");
+  
   for (int i = 0 ; i <= 255; i += 1) {
     analogWrite(led, i);
     delay(8);
@@ -68,6 +75,13 @@ void lightsOn() {
 }
 
 void lightsOff() {
+  if(ledOn == false) return;
+  
+  ledOn = false;
+  
+  lcd.setCursor(12,0);
+  lcd.print("O");
+
   for (int i = 255 ; i >= 0; i -= 1) {
     analogWrite(led, i);
     delay(8);
@@ -166,8 +180,6 @@ void loop(void)
     } else {
       lightsOn();
     }
-
-    ledOn = !ledOn;
   }
 
   Alarm.delay(16);
