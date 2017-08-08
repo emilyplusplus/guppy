@@ -13,50 +13,20 @@ DallasTemperature sensors(&oneWire);
 
 LiquidCrystal lcd(13,12,11,10,9,8,7);
 
-bool ledOn = true;
+bool ledOn = false;
 float current = 75.00;
+float avg = 0.00;
 
-byte customChar[8] = {
-  0b01000,
-  0b11100,
-  0b11110,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111
-};
+float dataStore[20] = {0};
 
-byte customChar2[8] = {
-  0b00000,
-  0b00000,
-  0b01000,
-  0b11110,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111
-};
-
-byte customChar3[8] = {
+byte empty[8] = {
   0b00000,
   0b00000,
   0b00000,
   0b00000,
   0b00000,
-  0b10000,
-  0b11111,
-  0b11111
-};
-
-byte customChar4[8] = {
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b11111,
+  0b00000,
+  0b00000,
   0b11111
 };
 
@@ -92,7 +62,7 @@ void setup(void)
 { 
   Serial.begin(9600);
   sensors.begin(); 
-  setTime(20,31,0,5,8,17);
+  setTime(16,40,0,5,8,17);
 
   Alarm.alarmRepeat(9,0,0,lightsOn);
   Alarm.alarmRepeat(23,0,0,lightsOff);
@@ -108,27 +78,107 @@ void setup(void)
   lcd.write(uint8_t(0b01111110));
   lcd.print("23:00(I) 22:20");
 
-  lcd.setCursor(19,1);
-  lcd.print("!");
+  //lcd.setCursor(19,1);
+  //lcd.print("!");
 
   lcd.setCursor(0,2);
   lcd.print(75.45);
   lcd.write(uint8_t(0b11011111));
-  lcd.print("F -+"); //F +2.34
+  lcd.print("F"); //F +2.34
 
   lcd.setCursor(0,3);
   lcd.print("-----");
   lcd.write(uint8_t(0b11011111));
   lcd.print("Favg(20h)");
 
-  lcd.createChar(0, customChar);
-  lcd.createChar(1, customChar2);
-  lcd.createChar(2, customChar3);
-  lcd.createChar(3, customChar3);
-  lcd.createChar(4, customChar4);
-  lcd.createChar(5, customChar4);
-  lcd.createChar(6, customChar4);
-  lcd.createChar(7, customChar4);
+  lcd.createChar(1, empty);
+  lcd.setCursor(16, 2);
+  //lcd.write(1);
+  //lcd.write(1);
+  //lcd.write(1);
+  //lcd.write(1);
+  lcd.setCursor(16, 3);
+  lcd.write(1);
+  lcd.write(1);
+  lcd.write(1);
+  lcd.write(1);
+
+  Alarm.timerRepeat(5, getTemp);
+  Alarm.timerRepeat(1, updateDisplay);
+
+  Alarm.timerRepeat(10, storeData); //60*60=3600
+
+  lightsOn();
+} 
+
+void storeData() {
+  float total = 0;
+  float count = 0;
+  
+  for(int i = 0; i < 19; i++) {
+    dataStore[i] = dataStore[i+1];
+    if(dataStore[i] > 0) { total += dataStore[i]; count++; }
+    //Serial.print(dataStore[i]);
+    //Serial.print(",");
+  }
+  dataStore[19] = current;
+  if(dataStore[19] > 0) { total += current; count++; }
+  //Serial.println(dataStore[19]);
+
+  avg = total / count;
+
+  if(avg > 0) {
+    lcd.setCursor(0,3);
+    lcd.print(avg);
+  }
+
+  /*for(int i = 0; i < 8; i++) {
+    int pos = (i % 4) * 5;
+
+    //Serial.println(i);
+    
+    int t = map(((dataStore[pos] > 0) ? dataStore[pos] : 70), 70, 85, 1, 16);
+    int t2 = map(((dataStore[pos+1] > 0) ? dataStore[pos+1] : 70), 70, 85, 1, 16);
+    int t3 = map(((dataStore[pos+2] > 0) ? dataStore[pos+2] : 70), 70, 85, 1, 16);
+    int t4 = map(((dataStore[pos+3] > 0) ? dataStore[pos+3] : 70), 70, 85, 1, 16);
+    int t5 = map(((dataStore[pos+4] > 0) ? dataStore[pos+4] : 70), 70, 85, 1, 16);
+
+    /*Serial.println(t);
+    Serial.println(t2);
+    Serial.println(t3);
+    Serial.println(t4);
+    Serial.println(t5);*/
+
+    /*if(i < 4) {
+      byte next[8] = {
+        (((t == 16) ? 1 : 0) << 4) & (((t2 == 16) ? 1 : 0) << 3) & (((t3 == 16) ? 1 : 0) << 2) & (((t4 == 16) ? 1 : 0) << 1) & (((t5 == 16) ? 1 : 0) << 0),
+        (((t >= 15) ? 1 : 0) << 4) & (((t2 >= 15) ? 1 : 0) << 3) & (((t3 >= 15) ? 1 : 0) << 2) & (((t4 >= 15) ? 1 : 0) << 1) & (((t5 >= 15) ? 1 : 0) << 0),
+        (((t >= 14) ? 1 : 0) << 4) & (((t2 >= 14) ? 1 : 0) << 3) & (((t3 >= 14) ? 1 : 0) << 2) & (((t4 >= 14) ? 1 : 0) << 1) & (((t5 >= 14) ? 1 : 0) << 0),
+        (((t >= 13) ? 1 : 0) << 4) & (((t2 >= 13) ? 1 : 0) << 3) & (((t3 >= 13) ? 1 : 0) << 2) & (((t4 >= 13) ? 1 : 0) << 1) & (((t5 >= 13) ? 1 : 0) << 0),
+        (((t >= 12) ? 1 : 0) << 4) & (((t2 >= 12) ? 1 : 0) << 3) & (((t3 >= 12) ? 1 : 0) << 2) & (((t4 >= 12) ? 1 : 0) << 1) & (((t5 >= 12) ? 1 : 0) << 0),
+        (((t >= 11) ? 1 : 0) << 4) & (((t2 >= 11) ? 1 : 0) << 3) & (((t3 >= 11) ? 1 : 0) << 2) & (((t4 >= 11) ? 1 : 0) << 1) & (((t5 >= 11) ? 1 : 0) << 0),
+        (((t >= 10) ? 1 : 0) << 4) & (((t2 >= 10) ? 1 : 0) << 3) & (((t3 >= 10) ? 1 : 0) << 2) & (((t4 >= 10) ? 1 : 0) << 1) & (((t5 >= 10) ? 1 : 0) << 0),
+        (((t >= 9) ? 1 : 0) << 4) & (((t2 >= 9) ? 1 : 0) << 3) & (((t3 >= 9) ? 1 : 0) << 2) & (((t4 >= 9) ? 1 : 0) << 1) & (((t5 >= 9) ? 1 : 0) << 0)
+      };
+      lcd.createChar(i, next);
+      Serial.print(next[7], BIN);
+      Serial.print("-");
+    } else {
+      byte next[8] = {
+        (((t >= 8) ? 1 : 0) << 4) & (((t2 >= 8) ? 1 : 0) << 3) & (((t3 >= 8) ? 1 : 0) << 2) & (((t4 >= 8) ? 1 : 0) << 1) & (((t5 >= 8) ? 1 : 0) << 0),
+        (((t >= 7) ? 1 : 0) << 4) & (((t2 >= 7) ? 1 : 0) << 3) & (((t3 >= 7) ? 1 : 0) << 2) & (((t4 >= 7) ? 1 : 0) << 1) & (((t5 >= 7) ? 1 : 0) << 0),
+        (((t >= 6) ? 1 : 0) << 4) & (((t2 >= 6) ? 1 : 0) << 3) & (((t3 >= 6) ? 1 : 0) << 2) & (((t4 >= 6) ? 1 : 0) << 1) & (((t5 >= 6) ? 1 : 0) << 0),
+        (((t >= 5) ? 1 : 0) << 4) & (((t2 >= 5) ? 1 : 0) << 3) & (((t3 >= 5) ? 1 : 0) << 2) & (((t4 >= 5) ? 1 : 0) << 1) & (((t5 >= 5) ? 1 : 0) << 0),
+        (((t >= 4) ? 1 : 0) << 4) & (((t2 >= 4) ? 1 : 0) << 3) & (((t3 >= 4) ? 1 : 0) << 2) & (((t4 >= 4) ? 1 : 0) << 1) & (((t5 >= 4) ? 1 : 0) << 0),
+        (((t >= 3) ? 1 : 0) << 4) & (((t2 >= 3) ? 1 : 0) << 3) & (((t3 >= 3) ? 1 : 0) << 2) & (((t4 >= 3) ? 1 : 0) << 1) & (((t5 >= 3) ? 1 : 0) << 0),
+        (((t >= 2) ? 1 : 0) << 4) & (((t2 >= 2) ? 1 : 0) << 3) & (((t3 >= 2) ? 1 : 0) << 2) & (((t4 >= 2) ? 1 : 0) << 1) & (((t5 >= 2) ? 1 : 0) << 0),
+        (((t >= 1) ? 1 : 0) << 4) & (((t2 >= 1) ? 1 : 0) << 3) & (((t3 >= 1) ? 1 : 0) << 2) & (((t4 >= 1) ? 1 : 0) << 1) & (((t5 >= 1) ? 1 : 0) << 0)
+      };
+      lcd.createChar(i, next);
+      Serial.println(next[7], BIN);
+    }
+  }
+
   lcd.setCursor(16, 2);
   lcd.write((byte)0);
   lcd.write(1);
@@ -138,13 +188,8 @@ void setup(void)
   lcd.write(4);
   lcd.write(5);
   lcd.write(6);
-  lcd.write(7);
-
-  Alarm.timerRepeat(5, getTemp);
-  Alarm.timerRepeat(1, updateDisplay);
-
-  lightsOn();
-} 
+  lcd.write(7);*/
+}
 
 void getTemp() {
   sensors.requestTemperatures();
@@ -168,7 +213,7 @@ void updateDisplay() {
 
   if(current > 0) {
     lcd.setCursor(0,2);
-  lcd.print(current);
+    lcd.print(current);
   }
 }
 
