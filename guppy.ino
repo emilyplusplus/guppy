@@ -7,6 +7,7 @@
 #define temp 2
 #define led 3
 #define button 4
+#define heater 5
 
 OneWire oneWire(temp); 
 DallasTemperature sensors(&oneWire);
@@ -14,6 +15,7 @@ DallasTemperature sensors(&oneWire);
 LiquidCrystal lcd(13,12,11,10,9,8,7);
 
 bool ledOn = false;
+bool heaterOn = false;
 float current = 70.00;
 float avg = 0.00;
 
@@ -73,6 +75,7 @@ void setup(void)
 
   pinMode(led, OUTPUT);
   pinMode(button, INPUT_PULLUP);
+  pinMode(heater, OUTPUT);
 
   lcd.setCursor(0,0);
   lcd.print("08:00");
@@ -82,7 +85,7 @@ void setup(void)
   lcd.setCursor(0,2);
   lcd.print("-----");
   lcd.write(uint8_t(0b11011111));
-  lcd.print("F");
+  lcd.print("F(O)");
 
   lcd.setCursor(0,3);
   lcd.print("-----");
@@ -97,6 +100,7 @@ void setup(void)
   lcd.write(1);
 
   Alarm.timerRepeat(5, getTemp);
+  Alarm.timerRepeat(60, checkTemp);
   Alarm.timerRepeat(1, updateDisplay);
   Alarm.timerRepeat(3600ul, storeData); //60*60=3600
 } 
@@ -199,6 +203,27 @@ void getTemp() {
     lcd.setCursor(0,2);
     lcd.print(current);
   }
+}
+
+void checkTemp() {
+  if(current <= 0) return;
+  
+  if(current >= 81) {
+    heaterOn = false;
+
+    digitalWrite(heater, LOW);
+
+    lcd.setCursor(8,2);
+    lcd.print("O");
+  } else if(current <= 79) {
+    heaterOn = true;
+
+    digitalWrite(heater, HIGH);
+
+    lcd.setCursor(8,2);
+    lcd.print("I");
+  }
+  
 }
 
 void updateDisplay() {
