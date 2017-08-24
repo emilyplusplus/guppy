@@ -65,7 +65,7 @@ void setup(void)
   Serial.begin(9600);
   sensors.begin();
   
-  setTime(14,22,0,14,8,17);
+  setTime(9,27,0,24,8,17);
 
   Alarm.alarmRepeat(8,0,0,lightsOn);
   Alarm.alarmRepeat(22,0,0,lightsOff);
@@ -98,6 +98,10 @@ void setup(void)
   lcd.write(1);
   lcd.write(1);
   lcd.write(1);
+
+  if(hour() >= 8 && hour < 22) {
+    lightsOn();
+  }
 
   Alarm.timerRepeat(5, getTemp);
   Alarm.timerRepeat(60, checkTemp);
