@@ -208,14 +208,14 @@ void getTemp() {
 void checkTemp() {
   if(current <= 0) return;
   
-  if(current >= 81) {
+  if(current >= 78.25) {
     heaterOn = false;
 
     digitalWrite(heater, LOW);
 
     lcd.setCursor(8,2);
     lcd.print("O");
-  } else if(current <= 79) {
+  } else if(current <= 77.75) {
     heaterOn = true;
 
     digitalWrite(heater, HIGH);
