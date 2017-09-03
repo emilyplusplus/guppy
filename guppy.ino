@@ -65,7 +65,7 @@ void setup(void)
   Serial.begin(9600);
   sensors.begin();
   
-  setTime(9,27,0,24,8,17);
+  setTime(2,40,0,3,9,17);
 
   Alarm.alarmRepeat(8,0,0,lightsOn);
   Alarm.alarmRepeat(22,0,0,lightsOff);
@@ -99,7 +99,7 @@ void setup(void)
   lcd.write(1);
   lcd.write(1);
 
-  if(hour() >= 8 && hour < 22) {
+  if(hour() >= 8 && hour() < 22) {
     lightsOn();
   }
 
@@ -257,9 +257,11 @@ void loop(void)
   }
 
   if(Serial.available() > 0) {
-    if(Serial.read() == 'I') {
+    char temporary = Serial.read();
+    
+    if(temporary == 'I') {
       lightsOn();
-    } else {
+    } else if (temporary == 'O') {
       lightsOff();
     }
   }
