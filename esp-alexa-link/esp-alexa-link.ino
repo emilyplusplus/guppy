@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include "fauxmoESP.h"
-#include "credentials.h"
+#include "credentials.sample.h"
 
 #define SERIAL_BAUDRATE                 115200
 #define LED                             2
@@ -52,10 +52,7 @@ void setup() {
     fauxmo.enable(true);
 
     // Add virtual devices
-    fauxmo.addDevice("light one");
-    fauxmo.addDevice("light two");
-    fauxmo.addDevice("light three");
-    fauxmo.addDevice("light four");
+    fauxmo.addDevice("fish light");
 
     // fauxmoESP 2.0.0 has changed the callback signature to add the device_id, this WARRANTY
     // it's easier to match devices to action without having to compare strings.
