@@ -4,7 +4,8 @@
 #include "credentials.sample.h"
 
 #define SERIAL_BAUDRATE                 115200
-#define LED                             2
+#define ON                              2
+#define OFF                             0
 
 fauxmoESP fauxmo;
 
@@ -35,6 +36,12 @@ void wifiSetup() {
 
 void setup() {
 
+  // LED
+    pinMode(ON, OUTPUT);
+    digitalWrite(ON, LOW);
+    pinMode(OFF, OUTPUT);
+    digitalWrite(OFF, LOW);
+
     // Init serial port and clean garbage
     Serial.begin(SERIAL_BAUDRATE);
     Serial.println();
@@ -42,10 +49,6 @@ void setup() {
 
     // Wifi
     wifiSetup();
-
-    // LED
-    pinMode(LED, OUTPUT);
-    digitalWrite(LED, HIGH);
 
     // You can enable or disable the library at any moment
     // Disabling it will prevent the devices from being discovered and switched
@@ -58,7 +61,13 @@ void setup() {
     // it's easier to match devices to action without having to compare strings.
     fauxmo.onMessage([](unsigned char device_id, const char * device_name, bool state) {
         Serial.printf("[MAIN] Device #%d (%s) state: %s\n", device_id, device_name, state ? "ON" : "OFF");
-        digitalWrite(LED, !state);
+        if(state) {
+          digitalWrite(OFF, LOW);
+          digitalWrite(ON, HIGH);
+        } else {
+          digitalWrite(ON, LOW);
+          digitalWrite(OFF, HIGH);
+        }
     });
 
 }
