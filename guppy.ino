@@ -256,5 +256,13 @@ void loop(void)
     }
   }
 
+  if(Serial.available() > 0) {
+    if(Serial.read() == 'I') {
+      lightsOn();
+    } else {
+      lightsOff();
+    }
+  }
+
   Alarm.delay(16);
 } 

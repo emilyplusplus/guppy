@@ -3,9 +3,7 @@
 #include "fauxmoESP.h"
 #include "credentials.sample.h"
 
-#define SERIAL_BAUDRATE                 115200
-#define ON                              2
-#define OFF                             0
+#define SERIAL_BAUDRATE                 9600
 
 fauxmoESP fauxmo;
 
@@ -35,17 +33,7 @@ void wifiSetup() {
 }
 
 void setup() {
-
-  // LED
-    pinMode(ON, OUTPUT);
-    digitalWrite(ON, LOW);
-    pinMode(OFF, OUTPUT);
-    digitalWrite(OFF, LOW);
-
-    // Init serial port and clean garbage
     Serial.begin(SERIAL_BAUDRATE);
-    Serial.println();
-    Serial.println();
 
     // Wifi
     wifiSetup();
@@ -60,20 +48,17 @@ void setup() {
     // fauxmoESP 2.0.0 has changed the callback signature to add the device_id, this WARRANTY
     // it's easier to match devices to action without having to compare strings.
     fauxmo.onMessage([](unsigned char device_id, const char * device_name, bool state) {
-        Serial.printf("[MAIN] Device #%d (%s) state: %s\n", device_id, device_name, state ? "ON" : "OFF");
+        //Serial.printf("[MAIN] Device #%d (%s) state: %s\n", device_id, device_name, state ? "ON" : "OFF");
         if(state) {
-          digitalWrite(OFF, LOW);
-          digitalWrite(ON, HIGH);
+          Serial.println("I");
         } else {
-          digitalWrite(ON, LOW);
-          digitalWrite(OFF, HIGH);
+          Serial.println("O");
         }
     });
 
 }
 
 void loop() {
-
     // Since fauxmoESP 2.0 the library uses the "compatibility" mode by
     // default, this means that it uses WiFiUdp class instead of AsyncUDP.
     // The later requires the Arduino Core for ESP8266 staging version
@@ -82,11 +67,9 @@ void loop() {
     // packets
     fauxmo.handle();
 
-
     static unsigned long last = millis();
     if (millis() - last > 5000) {
         last = millis();
-        Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
     }
 
 }
