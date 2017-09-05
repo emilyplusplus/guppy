@@ -3,6 +3,7 @@
 #include <LiquidCrystal.h>
 #include <TimeLib.h>
 #include <TimeAlarms.h>
+#include <DS1302.h>
 
 #define temp 2
 #define led 3
@@ -65,7 +66,7 @@ void setup(void)
   Serial.begin(9600);
   sensors.begin();
   
-  setTime(2,40,0,3,9,17);
+  setTime(14,53,0,4,9,17);
 
   Alarm.alarmRepeat(8,0,0,lightsOn);
   Alarm.alarmRepeat(22,0,0,lightsOff);
